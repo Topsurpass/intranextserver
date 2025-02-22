@@ -1,3 +1,4 @@
+from django.utils.timezone import now
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
@@ -11,8 +12,10 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             user = serializer.validated_data['user']
+            user.last_login = now()
+            user.save(update_fields=['last_login'])
+            
             refresh = RefreshToken.for_user(user)
-
             refresh["email"] = user.email
             refresh["firstname"] = user.first_name
             refresh["lastname"] = user.last_name
