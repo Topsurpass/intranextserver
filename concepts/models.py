@@ -15,7 +15,7 @@ class Concept(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.topic
+        return self.title
 
     class Meta:
         verbose_name = "Concept"
