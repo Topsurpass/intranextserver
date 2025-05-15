@@ -14,6 +14,8 @@ class UserSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'password': {'write_only': True},
             'email': {'required': True},
+            'first_name': {'required': True},
+            'last_name': {'required': True},
         }
     
     def create(self, validated_data):
@@ -28,7 +30,7 @@ class UserSerializer(serializers.ModelSerializer):
         return user
 
 class UserProfileSerializer(serializers.ModelSerializer):
-    user = UserSerializer(read_only=True)
+    user_id = UserSerializer(read_only=True)
     class Meta:
         model = UserProfile
         fields = '__all__'
