@@ -19,6 +19,7 @@ from django.urls import path, include
 from users.urls import userurlpatterns
 from projects.urls import urlpatterns
 from concepts.urls import concepturlpatterns
+from exams.urls import examurlpatterns
 from rest_framework_simplejwt.views import TokenRefreshView
 from users.auth import CustomTokenObtainPairView
 from drf_yasg.views import get_schema_view
@@ -44,8 +45,10 @@ urlpatterns = [
     path('api/', include(urlpatterns)),
     path('api/', include(userurlpatterns)),
     path('api/', include(concepturlpatterns)),
+    path('api/', include(examurlpatterns)),
     path('api/auth/login/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+    path('_nested_admin/', include('nested_admin.urls')),
 ]
