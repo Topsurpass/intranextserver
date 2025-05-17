@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_celery_results',
+    'nested_admin',
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
@@ -76,6 +77,7 @@ INSTALLED_APPS = [
     'concepts',
     'projects',
     'events',
+    'exams',
 ]
 
 MIDDLEWARE = [
