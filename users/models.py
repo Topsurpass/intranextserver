@@ -1,6 +1,8 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 import uuid
+from cloudinary.models import CloudinaryField
+from django.conf import settings
 
 class User(AbstractUser):
     """Custom User model extending Django's AbstractUser"""
@@ -14,6 +16,7 @@ class User(AbstractUser):
     password = models.CharField(max_length=128)
     createdAt = models.DateTimeField(auto_now_add=True)
     updatedAt = models.DateTimeField(auto_now=True)
+    profile_picture = CloudinaryField("image", blank=True, null=True)
     groups = models.ManyToManyField(
         "auth.Group",
         related_name="custom_user_groups",
@@ -35,7 +38,6 @@ class UserProfile(models.Model):
     user_id = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")    
     phone = models.CharField(max_length=15, blank=True, null=True)
     address = models.TextField()
-    profile_picture = models.URLField(max_length=255, blank=True, null=True)
     createdAt = models.DateTimeField(auto_now_add=True)
     updatedAt = models.DateTimeField(auto_now=True)
 

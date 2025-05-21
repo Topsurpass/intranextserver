@@ -31,9 +31,9 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 SECRET_KEY = 'django-insecure-$g%ya2u6pq4^!%%c40zpx5=$a=wtz!w_t4rs7hd1n#k^^%!j7t'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env.bool('DEBUG', default=True)
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "temz.pythonanywhere.com"]
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(" ")
 
 CORS_ALLOW_METHODS = [
     "GET",
@@ -52,11 +52,8 @@ CORS_ALLOW_HEADERS = [
     "Origin",
 ]
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "https://intranext.vercel.app",
-]
+CORS_ALLOWED_ORIGINS = os.environ.get("CORS_ALLOWED_ORIGINS", "").split(" ")
+
 CORS_ALLOW_CREDENTIALS = True
 
 
@@ -183,6 +180,12 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+CLOUDINARY_CLOUD_NAME = env("CLOUDINARY_CLOUD_NAME"),
+CLOUDINARY_API_KEY = env("CLOUDINARY_API_KEY"),
+CLOUDINARY_API_SECRET = env("CLOUDINARY_API_SECRET"),
+
+DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 
 AUTH_USER_MODEL = 'users.User'
 

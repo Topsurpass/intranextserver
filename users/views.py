@@ -1,7 +1,7 @@
 from .models import User, UserProfile
-from .serializers import UserSerializer, UserProfileSerializer
+from .serializers import UserSerializer, UserProfileSerializer, UserFullDetailSerializer
 from rest_framework import generics
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 # from .tasks.email_tasks import send_welcome_email
 from rest_framework.response import Response
 from rest_framework import status
@@ -24,3 +24,11 @@ class UserProfileDetailView(generics.RetrieveUpdateAPIView):
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
     lookup_field = "user_id"
+
+
+class UserFullDetailUpdateView(generics.RetrieveUpdateAPIView):
+    serializer_class = UserFullDetailSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user

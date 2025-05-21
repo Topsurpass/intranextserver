@@ -30,10 +30,34 @@ class UserSerializer(serializers.ModelSerializer):
         return user
 
 class UserProfileSerializer(serializers.ModelSerializer):
-    user_id = UserSerializer(read_only=True)
     class Meta:
         model = UserProfile
-        fields = '__all__'
+        fields =[ 'id', 'phone', 'address']
+
+
+class UserFullDetailSerializer(serializers.ModelSerializer):
+    profile = UserProfileSerializer()
+
+    class Meta:
+        model = User
+        fields = ['id', 'email', 'first_name', 'last_name', 'profile', 'role', 'createdAt', 'updatedAt', 'profile_picture']
+
+    def update(self, instance, validated_data):
+        profile_data = validated_data.pop('profile', None)
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        if profile_data:
+            profile = instance.profile
+            for attr, value in profile_data.items():
+                setattr(profile, attr, value)
+            profile.save()
+
+        return instance
+    
+
 
 class CustomTokenObtainPairSerializer(serializers.Serializer):
     email = serializers.EmailField()
