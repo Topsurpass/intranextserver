@@ -1,8 +1,9 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from .models import Exam, ExamSubmission
-from .serializers import ExamSerializer, ExamSubmissionSerializer
+from .models import Exam, ExamSubmission, UserAnswer
+from rest_framework.exceptions import NotFound, ValidationError
+from .serializers import ExamSerializer, ExamSubmissionSerializer, ReviewedQuestionSerializer
 from rest_framework.views import APIView
 from django.db.models import Avg
 
@@ -141,3 +142,42 @@ class AvailableExamsView(APIView):
             })
 
         return Response(exams_data)
+
+
+
+class ReviewExamView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, exam_id):
+        user = request.user
+
+        try:
+            exam = Exam.objects.get(id=exam_id)
+        except Exam.DoesNotExist:
+            raise NotFound("The exam with the given ID does not exist.")
+
+        try:
+            submission = ExamSubmission.objects.get(user=user, exam=exam)
+        except ExamSubmission.DoesNotExist:
+            raise ValidationError("You have not submitted this exam yet.")
+
+        user_answers = {
+            str(ans.question_id): str(ans.selected_option_id)
+            for ans in UserAnswer.objects.filter(submission=submission)
+        }
+
+        all_questions = exam.questions.prefetch_related('options')
+
+        serializer = ReviewedQuestionSerializer(
+            all_questions,
+            many=True,
+            context={'user_answers': user_answers}
+        )
+
+        return Response({
+            'exam_id': str(exam.id),
+            'exam_title': exam.title,
+            'score': submission.score,
+            'submitted_at': submission.submitted_at,
+            'questions': serializer.data
+        })

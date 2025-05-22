@@ -1,12 +1,12 @@
 from rest_framework import serializers
-from .models import Exam, Question, Option, ExamSubmission
+from .models import Exam, Question, Option, ExamSubmission, UserAnswer
+from rest_framework.exceptions import NotFound, ValidationError
 
 
 class OptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Option
         fields = ['id', 'text']
-
 
 class QuestionSerializer(serializers.ModelSerializer):
     options = OptionSerializer(many=True, read_only=True)
@@ -47,30 +47,63 @@ class ExamSubmissionSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         user = self.context['request'].user
-        exam = Exam.objects.get(id=validated_data['exam_id'])
+        exam_id = validated_data['exam_id']
         answers = validated_data['answers']
 
+        try:
+            exam = Exam.objects.get(id=exam_id)
+        except Exam.DoesNotExist:
+            raise NotFound("The exam with the given ID does not exist.")
+
         if ExamSubmission.objects.filter(user=user, exam=exam).exists():
-            raise serializers.ValidationError("You have already taken this exam.")
+            raise ValidationError("You have already submitted this exam.")
 
         total_questions = exam.questions.count()
         correct = 0
 
+        submission = ExamSubmission.objects.create(user=user, exam=exam, score=0)
+
         for answer in answers:
             q_id = answer['question']
             selected_option_id = answer['selected_option']
+
             try:
                 option = Option.objects.get(id=selected_option_id, question_id=q_id)
+                question = Question.objects.get(id=q_id)
+
+                UserAnswer.objects.create(
+                    submission=submission,
+                    question=question,
+                    selected_option=option
+                )
+
                 if option.is_correct:
                     correct += 1
+
             except Option.DoesNotExist:
                 continue
 
         score = round((correct / total_questions) * 100, 2)
+        submission.score = score
+        submission.save()
 
-        submission, created = ExamSubmission.objects.update_or_create(
-            user=user,
-            exam=exam,
-            defaults={'score': score}
-        )
-        return {'score': score, 'submitted': created}
+        return {'score': score, 'submitted': True}
+
+
+class ReviewedOptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Option
+        fields = ['id', 'text', 'is_correct']
+
+
+class ReviewedQuestionSerializer(serializers.ModelSerializer):
+    options = ReviewedOptionSerializer(many=True, read_only=True)
+    selected_option_id = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Question
+        fields = ['id', 'text', 'options', 'selected_option_id']
+
+    def get_selected_option_id(self, question):
+        user_answers = self.context.get('user_answers', {})
+        return user_answers.get(str(question.id)) 

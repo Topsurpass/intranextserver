@@ -57,3 +57,16 @@ class ExamSubmission(models.Model):
 
     class Meta:
         unique_together = ('user', 'exam')
+
+
+class UserAnswer(models.Model):
+    """
+    Stores the user's selected option for each question in an exam submission.
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    submission = models.ForeignKey(ExamSubmission, on_delete=models.CASCADE, related_name='answers')
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    selected_option = models.ForeignKey(Option, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('submission', 'question')

@@ -5,7 +5,8 @@ from .views import (
     ExamListView,
     UserCourseScoreView,
     CompletedCoursesWithScoresView,
-    AvailableExamsView
+    AvailableExamsView,
+    ReviewExamView
     )
 
 examurlpatterns = [
@@ -15,4 +16,5 @@ examurlpatterns = [
     path('course/<uuid:course_id>/user-score/', UserCourseScoreView.as_view(), name='user-course-score'),
     path('completed-courses/', CompletedCoursesWithScoresView.as_view(), name='completed-courses'),
     path('available-exams/', AvailableExamsView.as_view(), name='available-exams'),
+    path('exam/<uuid:exam_id>/review/', ReviewExamView.as_view(), name='exam-review'),
 ]
